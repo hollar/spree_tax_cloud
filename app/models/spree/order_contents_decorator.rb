@@ -1,12 +1,12 @@
 Spree::OrderContents.class_eval do
-  def add_with_tax_cloud(variant, quantity = 1, currency = nil, shipment = nil)
-    add_without_tax_cloud(variant, quantity, currency, shipment).tap do
+  def add_with_tax_cloud(variant, quantity = 1)
+    add_without_tax_cloud(variant, quantity).tap do
       tax_cloud_compute_tax
     end
   end
 
-  def remove_with_tax_cloud(variant, quantity = 1, shipment = nil)
-    remove_without_tax_cloud(variant, quantity, shipment).tap do
+  def remove_with_tax_cloud(variant, quantity = 1)
+    remove_without_tax_cloud(variant, quantity).tap do
       tax_cloud_compute_tax
     end
   end
@@ -28,4 +28,3 @@ Spree::OrderContents.class_eval do
   alias_method_chain :add, :tax_cloud
   alias_method_chain :remove, :tax_cloud
 end
-
