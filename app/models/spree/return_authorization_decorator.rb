@@ -18,7 +18,7 @@ module Solidus
           tax_return_amount += round_to_two_places( cart_item.tax_amount )
         end
         transaction.returned
-        Adjustment.create(adjustable: order, amount: tax_return_amount.abs * -1, label: Spree.t(:rma_tax_credit), source: self)
+        Spree::Adjustment.create(adjustable: order, amount: tax_return_amount.abs * -1, label: Spree.t(:rma_tax_credit), source: self)
         order.update!
       else
         raise ::SpreeTaxCloud::Error, 'TaxCloud response unsuccessful!'
