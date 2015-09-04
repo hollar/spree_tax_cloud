@@ -17,4 +17,4 @@ en:
         cloudtax_description: No Op TaxCloud Calculator
         cloudtax_label: Cloud Tax  
         rma_tax_credit: RMA Tax Credit
-
+	tax_label: 'Tax'
