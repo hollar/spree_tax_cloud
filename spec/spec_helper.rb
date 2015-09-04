@@ -27,11 +27,11 @@ require 'spree/testing_support/url_helpers'
 #   Capybara::Selenium::Driver.new(app, :browser => :chrome)
 # end
 
-Capybara.javascript_driver = :chrome
+Capybara.javascript_driver = :selenium
 
 RSpec.configure do |config|
   config.include FactoryGirl::Syntax::Methods
-  config.include Spree::TestingSupport::ControllerRequests
+  config.include Spree::TestingSupport::ControllerRequests, type: :controller
   config.include Spree::TestingSupport::Preferences
   config.include Spree::TestingSupport::Flash
   config.include Spree::TestingSupport::UrlHelpers
