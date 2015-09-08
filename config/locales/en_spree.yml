@@ -1,4 +1,3 @@
----
 en:
     business_address: Business Address
     save_preferences: Save Preferences
@@ -15,6 +14,6 @@ en:
     zip_plus_4: Zip +4
     spree:
         cloudtax_description: No Op TaxCloud Calculator
-        cloudtax_label: Cloud Tax  
+        cloudtax_label: Cloud Tax
         rma_tax_credit: RMA Tax Credit
-	tax_label: 'Tax'
+        tax_label: Tax
