@@ -1,11 +1,11 @@
 Spree::OrderContents.class_eval do
-  def add_with_tax_cloud(variant, quantity = 1)
-    add_without_tax_cloud(variant, quantity).tap do
+  def add_with_tax_cloud(variant, quantity = 1, options = {})
+    add_without_tax_cloud(variant, quantity, options).tap do
       tax_cloud_compute_tax
     end
   end
 
-  def remove_with_tax_cloud(variant, quantity = 1)
+  def remove_with_tax_cloud(variant, quantity = 1, options = {})
     remove_without_tax_cloud(variant, quantity).tap do
       tax_cloud_compute_tax
     end
