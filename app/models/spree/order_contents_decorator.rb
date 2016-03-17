@@ -24,7 +24,4 @@ Spree::OrderContents.class_eval do
     SpreeTaxCloud::TaxComputer.new(order).compute
   end
 
-  alias_method_chain :update_cart, :tax_cloud
-  alias_method_chain :add, :tax_cloud
-  alias_method_chain :remove, :tax_cloud
 end
