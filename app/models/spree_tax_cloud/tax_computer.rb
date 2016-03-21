@@ -1,9 +1,7 @@
 class SpreeTaxCloud::TaxComputer
-
   DEFAULT_TAX_AMOUNT = 0.0
   DEFAULT_STATUS_FIELD = :tax_cloud_response_at
   NewOrder = true
-
 
   class MissingTaxAmountError < StandardError; end
 
@@ -18,13 +16,14 @@ class SpreeTaxCloud::TaxComputer
     return unless order.tax_cloud_eligible?
     reset_tax_attributes(order)
 
-    transaction = Spree::TaxCloudTransaction.transaction_with_taxcloud(order, NewOrder) 
-    response = transaction.lookup 
+    transaction = Spree::TaxCloudTransaction.transaction_with_taxcloud(order, NewOrder)
+    response = transaction.lookup
     logger.debug(response)
+
     unless response.blank?
       response_cart_items = response.cart_items
       index = -1
-       
+
       order.line_items.each do |line_item|
         tax_amount = round_to_two_places( response_cart_items[index += 1].tax_amount )
         raise MissingTaxAmountError if tax_amount.nil?
@@ -45,7 +44,7 @@ class SpreeTaxCloud::TaxComputer
       end
 
       unless order.shipments.first.blank?
-        tax_amount = round_to_two_places( response_cart_items.last.tax_amount ) 
+        tax_amount = round_to_two_places( response_cart_items.last.tax_amount )
         shipment = order.shipments.first
         shipment.adjustments.tax.create!({
           :adjustable => shipment,
@@ -61,7 +60,9 @@ class SpreeTaxCloud::TaxComputer
         shipment.save!
       end
     else
-      raise ::SpreeTaxCloud::Error, 'TaxCloud response unsuccessful!'
+      if defined?(Airbrake)
+        Airbrake.notify(::SpreeTaxCloud::Error.new('TaxCloud response unsuccessful!'))
+      end
     end
 
     Spree::OrderUpdater.new(order).update
@@ -69,28 +70,30 @@ class SpreeTaxCloud::TaxComputer
     order.save!
   rescue SpreeTaxCloud::Error => e
     handle_spree_tax_cloud_error(e)
+  rescue  => e
+    handle_spree_tax_cloud_error(e)
   end
 
-  # Clean out old taxes and update 
+  # Clean out old taxes and update
   def reset_tax_attributes(order)
     order.all_adjustments.tax.destroy_all
     order.line_items.each do |line_item|
       line_item.update_attributes!({
-        additional_tax_total: 0,
-        adjustment_total: 0,
-        pre_tax_amount: 0,
-        included_tax_total: 0,
-      })
+                                     additional_tax_total: 0,
+                                     adjustment_total: 0,
+                                     pre_tax_amount: 0,
+                                     included_tax_total: 0,
+                                   })
 
       Spree::ItemAdjustments.new(line_item).update
       line_item.save!
     end
 
     order.update_attributes!({
-      additional_tax_total: 0,
-      adjustment_total: 0,
-      included_tax_total: 0,
-    })
+                               additional_tax_total: 0,
+                               adjustment_total: 0,
+                               included_tax_total: 0,
+                             })
 
     Spree::OrderUpdater.new(order).update
     order.save!
@@ -98,16 +101,15 @@ class SpreeTaxCloud::TaxComputer
 
   def handle_tax_cloud_error(e)
     logger.error(e)
-    Honeybadger.notify(e) if defined?(Honeybadger)
+    Airbrake.notify(e) if defined?(Airbrake)
     order.update_column(status_field, nil)
   end
 
 	def round_to_two_places(amount)
 		BigDecimal.new(amount.to_s).round(2, BigDecimal::ROUND_HALF_UP)
 	end
-   
+
   def logger
     @logger ||= Logger.new("#{Rails.root}/log/tax_cloud.log")
   end
 end
-
