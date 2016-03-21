@@ -69,9 +69,9 @@ class SpreeTaxCloud::TaxComputer
     order[status_field] = Time.now
     order.save!
   rescue SpreeTaxCloud::Error => e
-    handle_spree_tax_cloud_error(e)
+    handle_tax_cloud_error(e)
   rescue  => e
-    handle_spree_tax_cloud_error(e)
+    handle_tax_cloud_error(e)
   end
 
   # Clean out old taxes and update
