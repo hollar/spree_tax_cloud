@@ -16,9 +16,13 @@ class SpreeTaxCloud::TaxComputer
     return unless order.tax_cloud_eligible?
     reset_tax_attributes(order)
 
-    transaction = Spree::TaxCloudTransaction.transaction_with_taxcloud(order, NewOrder)
-    response = transaction.lookup
-    logger.debug(response)
+    response = nil
+
+    Timeout.timeout(Spree::Config.try(:taxcloud_timeout) || 9) do
+      transaction = Spree::TaxCloudTransaction.transaction_with_taxcloud(order, NewOrder)
+      response = transaction.lookup
+      logger.debug(response)
+    end
 
     unless response.blank?
       response_cart_items = response.cart_items
@@ -68,9 +72,12 @@ class SpreeTaxCloud::TaxComputer
     Spree::OrderUpdater.new(order).update
     order[status_field] = Time.now
     order.save!
+  # maintain multiple rescues for accurate backtraces
   rescue SpreeTaxCloud::Error => e
     handle_tax_cloud_error(e)
-  rescue  => e
+  rescue Timeout::Error => e
+    handle_tax_cloud_error(e)
+  rescue => e
     handle_tax_cloud_error(e)
   end
 
